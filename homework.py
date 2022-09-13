@@ -1,19 +1,17 @@
 import logging
 import os
 import time
-from pprint import pprint
+from http import HTTPStatus
 
 import requests
 import telegram
 from dotenv import load_dotenv
 
-...
-
 load_dotenv()
 
 PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
-TELEGRAM_CHAT_ID = 909658437
+TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
 RETRY_TIME = 600
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
@@ -24,13 +22,6 @@ HOMEWORK_STATUSES = {
     'reviewing': 'Работа взята на проверку ревьюером.',
     'rejected': 'Работа проверена: у ревьюера есть замечания.'
 }
-
-"""logging.basicConfig(
-    filemode='w',
-    level=logging.INFO,
-    filename='program.log',
-    format='%(asctime)s, %(levelname)s, %(message)s, %(name)s'
-)"""
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -52,14 +43,28 @@ def send_message(bot, message):
 
 def get_api_answer(current_timestamp):
     timestamp = current_timestamp or int(time.time())
-    # params = {'from_date': timestamp}
-    params = {'from_date': 0}
+    params = {'from_date': timestamp}
+    # params = {'from_date': 0}
     try:
         homework_statuses = requests.get(ENDPOINT, headers=HEADERS,
                                          params=params)
     except:
         logging.error('Эндпоинт не доступен')
-    return homework_statuses.json()
+    else:
+        if homework_statuses.status_code == HTTPStatus.OK:
+            logging.info('Успешное получение эндпоинта')
+            return homework_statuses.json()
+        elif homework_statuses.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
+            logging.error('Ошибка доступа INTERNAL_SERVER_ERROR')
+            raise SystemError('Ошибка доступа INTERNAL_SERVER_ERROR')
+        elif homework_statuses.status_code == HTTPStatus.REQUEST_TIMEOUT:
+            logging.error('Ошибка доступа REQUEST_TIMEOUT')
+            raise SystemError('Ошибка доступа REQUEST_TIMEOUT')
+        else:
+            logging.error(f'Ошибка доступа {homework_statuses.status_code}')
+            raise SystemError(
+                f'Ошибка доступа {homework_statuses.status_code}'
+            )
 
 
 def check_response(response):
@@ -84,15 +89,16 @@ def parse_status(homework):
     if homework_status and homework_name:
         if homework_status in HOMEWORK_STATUSES:
             verdict = HOMEWORK_STATUSES[homework_status]
-            return f'Изменился статус проверки работы "{homework_name}". {verdict}'
+            return (f'Изменился статус проверки работы '
+                    f'"{homework_name}". {verdict}')
         else:
             logging.error('Полученный статус отсутствует в списке '
-                           'HOMEWORK_STATUSES')
+                          'HOMEWORK_STATUSES')
             raise KeyError('Полученный статус отсутствует в списке '
                            'HOMEWORK_STATUSES')
     else:
         logging.error('Ключ homework_name/homework_status отсутствует '
-                       'в словаре')
+                      'в словаре')
         raise KeyError('Ключ homework_name/homework_status отсутствует '
                        'в словаре')
 
