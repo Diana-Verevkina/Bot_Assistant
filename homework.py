@@ -37,8 +37,8 @@ def send_message(bot, message):
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
         logging.info('Сообщение успешно отправлено')
-    except:
-        logging.error('Сбой в отправке сообщения')
+    except Exception as error:
+        logging.error(f'Сбой в отправке сообщения {error}')
 
 
 def get_api_answer(current_timestamp):
@@ -48,8 +48,8 @@ def get_api_answer(current_timestamp):
     try:
         homework_statuses = requests.get(ENDPOINT, headers=HEADERS,
                                          params=params)
-    except:
-        logging.error('Эндпоинт не доступен')
+    except Exception as error:
+        logging.error(f'Эндпоинт не доступен {error}')
     else:
         if homework_statuses.status_code == HTTPStatus.OK:
             logging.info('Успешное получение эндпоинта')
@@ -72,8 +72,8 @@ def check_response(response):
         if response['current_date']:
             try:
                 homeworks = response['homeworks']
-            except:
-                logging.error('Отсутствие ключа homeworks в запросе')
+            except Exception as error:
+                logging.error(f'Отсутствие ключа homeworks в запросе {error}')
             if type(homeworks) == list:
                 return homeworks
             else:
@@ -142,8 +142,8 @@ def main():
                 if message != old_message:
                     bot.send_message(TELEGRAM_CHAT_ID, message)
                     logging.info('Сообщение о сбое успешно отправлено')
-            except:
-                logging.error('Сбой в отправке сообщения о сбое в программе')
+            except Exception as error:
+                logging.error(error)
         finally:
             current_timestamp = int(time.time())
             time.sleep(RETRY_TIME)
