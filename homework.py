@@ -34,6 +34,7 @@ old_message = ''
 
 
 def send_message(bot, message):
+    """Отправляет сообщение в Telegram чат."""
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
         logging.info('Сообщение успешно отправлено')
@@ -42,6 +43,7 @@ def send_message(bot, message):
 
 
 def get_api_answer(current_timestamp):
+    """Делает запрос к единственному эндпоинту API-сервиса."""
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
     # params = {'from_date': 0}
@@ -68,6 +70,7 @@ def get_api_answer(current_timestamp):
 
 
 def check_response(response):
+    """Проверяет ответ API на корректность."""
     if type(response) == dict:
         if response['current_date']:
             try:
@@ -83,6 +86,8 @@ def check_response(response):
 
 
 def parse_status(homework):
+    """Извлекает из информации о конкретной домашней работе
+    статус этой работы."""
     homework_name = homework['homework_name']
     homework_status = homework['status']
 
@@ -104,6 +109,7 @@ def parse_status(homework):
 
 
 def check_tokens():
+    """Проверяет доступность переменных окружения."""
     if not PRACTICUM_TOKEN:
         logging.critical('Ошибка PRACTICUM_TOKEN')
         return False
