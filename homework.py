@@ -2,7 +2,6 @@ import logging
 import os
 import time
 from http import HTTPStatus
-from pprint import pprint
 
 import requests
 import telegram
@@ -10,7 +9,6 @@ import telegram.error
 from dotenv import load_dotenv
 
 from exceptions import EmptyAnswerFromAPI, InvalidResponseCode
-import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DIR = os.path.join(BASE_DIR, 'main.log')
@@ -65,7 +63,7 @@ def get_api_answer(current_timestamp):
     get_api_dict = {
         'url': ENDPOINT,
         'headers': HEADERS,
-        'params': {'from_date': 0}
+        'params': {'from_date': timestamp}
     }
     logging.info(
         "Начали запрос к API endpoint: {url}, headers: {headers}, "
@@ -87,8 +85,8 @@ def get_api_answer(current_timestamp):
         return homework_statuses.json()
     except Exception as error:
         raise ConnectionError(
-            "error: {}, endpoint: {url}, headers: {headers}, params: {params}".format
-            (error, **get_api_dict)
+            "error: {}, endpoint: {url}, headers: {headers}, "
+            "params: {params}".format(error, **get_api_dict)
         )
 
 
@@ -162,7 +160,8 @@ def main():
                 logging.info('Пустой ответ от API')
             if current_report != prev_report:
                 send_message(bot, homework_status)
-                current_timestamp = response.get('current_date', int(time.time()))
+                current_timestamp = response.get('current_date',
+                                                 int(time.time()))
                 prev_report = current_report.copy()
             else:
                 logging.debug('Новые статусы отсутствуют')
