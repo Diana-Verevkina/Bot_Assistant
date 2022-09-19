@@ -57,7 +57,6 @@ def send_message(bot, message):
         return True
 
 
-
 def get_api_answer(current_timestamp):
     """Делает запрос к единственному эндпоинту API-сервиса."""
     timestamp = current_timestamp
@@ -66,7 +65,7 @@ def get_api_answer(current_timestamp):
     get_api_dict = {
         'url': ENDPOINT,
         'headers': HEADERS,
-        'params': {'from_date': 0}
+        'params': {'from_date': timestamp}
     }
     logger.info(
         "Начали запрос к API endpoint: {url}, headers: {headers}, "
