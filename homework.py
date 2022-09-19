@@ -45,14 +45,17 @@ logger.addHandler(handler_file)
 def send_message(bot, message):
     """Отправляет сообщение в Telegram чат."""
     try:
-        logging.info('Начало отправки сообщения со статусом '
-                     'домашней работы в telegram')
+        logger.info(f'Начало отправки сообщения со статусом '
+                    f'домашней работы в telegram: {message}')
         bot.send_message(TELEGRAM_CHAT_ID, message)
     except telegram.error.TelegramError as error:
-        logging.error(f'Сбой в отправке сообщения {error}')
+        logger.error(f'Сбой в отправке сообщения {error}')
+        return False
     else:
-        logging.info('Успешная отправка сообщения со статусом '
-                     'домашней работы в telegram')
+        logger.info(f'Успешная отправка сообщения со статусом '
+                    f'домашней работы в telegram: {message}')
+        return True
+
 
 
 def get_api_answer(current_timestamp):
@@ -63,17 +66,14 @@ def get_api_answer(current_timestamp):
     get_api_dict = {
         'url': ENDPOINT,
         'headers': HEADERS,
-        'params': {'from_date': timestamp}
+        'params': {'from_date': 0}
     }
-    logging.info(
+    logger.info(
         "Начали запрос к API endpoint: {url}, headers: {headers}, "
-        "params: {params}".format(**get_api_dict))
+        "params: {params}".format(**get_api_dict)
+    )
 
     try:
-        """homework_statuses = requests.get(
-            get_api_dict['url'], headers=get_api_dict['headers'],
-            params=get_api_dict['params']
-        )"""
         homework_statuses = requests.get(**get_api_dict)
         if homework_statuses.status_code != HTTPStatus.OK:
             msg = (
@@ -128,7 +128,7 @@ def check_tokens():
 
     for token_name, token in tokens:
         if not token:
-            logging.info(f'Ошибка {token_name}')
+            logger.info(f'Ошибка {token_name}')
             check_token = False
     return check_token
 
@@ -157,14 +157,18 @@ def main():
                     'reviewer_comment'
                 )
             else:
-                logging.info('Пустой ответ от API')
+                logger.info('Пустой ответ от API')
             if current_report != prev_report:
                 send_message(bot, homework_status)
-                current_timestamp = response.get('current_date',
-                                                 int(time.time()))
-                prev_report = current_report.copy()
+                if send_message(bot, homework_status):
+                    current_timestamp = response.get('current_date',
+                                                     current_timestamp)
+                    prev_report = current_report.copy()
             else:
-                logging.debug('Новые статусы отсутствуют')
+                logger.debug('Новые статусы отсутствуют')
+
+        except EmptyAnswerFromAPI as error:
+            logger.error(f'Пустой ответ от API: {error}')
 
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
