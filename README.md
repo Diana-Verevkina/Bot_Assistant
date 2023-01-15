@@ -1,4 +1,4 @@
-# Bot Assistant <img src="img_1.png" style="height: 70pt">
+# Bot Assistant <img src="img_1.png" style="height: 40pt">
 homework_bot
 
 Telegram-бот, который будет обращаться к API сервиса Практикум.Домашка и 
