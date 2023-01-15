@@ -1,8 +1,5 @@
-# Bot Assistant
+# Bot Assistant <img src="img_1.png" style="height: 70pt">
 homework_bot
-<div id='container'>
-  <img src="img_1.png" style="height: 40pt">
-</div>
 
 Telegram-бот, который будет обращаться к API сервиса Практикум.Домашка и 
 узнавать статус домашней работы: взято ли дз в ревью, проверено ли оно, 
